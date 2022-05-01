@@ -50,7 +50,6 @@ class MinDDPReg:
         N = self.N
         dynamics = self.dynamics
         cost = self.cost
-        safety_function = self.safety_function
 
         n = dynamics.n
         m = dynamics.m
@@ -69,22 +68,14 @@ class MinDDPReg:
             # Backward propagation:
             for k in range(N - 2, -1, -1):
                 Qx, Qu, Qxx, Qxu, Qux, Quu = self.ddp_matrices(xbar[:, [k]], ubar[:, [k]], x_desired[:,[k]], Vx, Vxx, k)
-                # for Quu regularizarion:
-                # Quu = Quu + lambda *np.eye(m)
                 # compute ff and fb control gains
-                Quu = Quu + np.eye(m) * self.reg_lambda()
+                #Quu = Quu + np.eye(m) * self.reg_lambda()
                 invQuu = np.linalg.inv(Quu)
                 k_u[:, [k]] = -invQuu @ Qu
                 K_u[:, :, k] = -invQuu @ Qux
-                # k_u[:, [k]] = -np.linalg.solve(Quu, Qu)
-                # K_u[:, :, k] = -np.linalg.solve(Quu, Qux)
-            # compute value function grad and hess
-            #     Vx = Qx - Qxu @ np.linalg.inv(Quu) @ Qu
-            #     Vxx = Qxx - Qxu @ np.linalg.inv(Quu) @ Qux
+                # compute value function grad and hess
                 Vx = Qx + Qxu @ k_u[:, [k]]
                 Vxx = Qxx + Qxu @ K_u[:, :, k]
-            #     Vx = Qx + K_u[:, :, k].T @ Quu @ k_u[:, [k]] + K_u[:, :, k].T @ Qu + Qxu @ k_u[:, [k]]
-            #     Vxx = Qxx + K_u[:, :, k].T @ Quu @ K_u[:, :, k] + K_u[:, :, k].T @ Qux + Qxu @ K_u[:, :, k]
                 # make sure Vxx is positive definite (avoid numerical issues)
                 Vxx = 0.5 * (Vxx + Vxx.T)
                 # for expected decrease in cost:
@@ -96,15 +87,11 @@ class MinDDPReg:
             x = np.zeros([n, N])
             u = np.zeros([m, N-1])
             x[:, [0]] = x0
-            # alpha0 = np.linspace(1, 0, 11)
             alpha0 = np.power(10, np.linspace(0, -3, 11))
-            # alpha0 = np.array([1])
-            safe = True
             for jj in range(alpha0.shape[0]):
                 alpha = alpha0[jj]
                 # Forward propagation:
                 L_new = 0.0
-                safe = True
                 deltax = x[:, [0]] - xbar[:, [0]]
                 for k in range(N-1):
                     deltau = alpha*k_u[:, [k]] + K_u[:, :, k] @ deltax
@@ -131,19 +118,21 @@ class MinDDPReg:
             if forwardpass == 1:
                 xbar = x
                 ubar = u
-                if self.reg_ind != 0:
-                    print("Regularization Worked!")
-                    self.reg_ind -= 2
+                # if self.reg_ind != 0:
+                #     print("Regularization Worked!")
+                #     self.reg_ind -= 2
                 dV = L - L_new
 
                 L = L_new
             else:
-                # if safe: #useful if the only bas active is tolerant
-                #     print('Line search failed but no collision detected, stopping loop')
-                #     break
-                print("Line search failed, trying lambda=",self.reg_lambda())
-
-                self.reg_ind += 1
+                break
+            # else:
+            #     # if safe: #useful if the only bas active is tolerant
+            #     #     print('Line search failed but no collision detected, stopping loop')
+            #     #     break
+            #     print("Line search failed, trying lambda=",self.reg_lambda())
+            #
+            #     self.reg_ind += 1
 
             if self.verbose:
                 print("Iteration", ii, "Cost:", L)
