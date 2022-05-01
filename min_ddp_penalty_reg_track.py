@@ -125,6 +125,7 @@ class MinDDPReg:
 
                 L = L_new
             else:
+                print('Linesearch Failed')
                 break
             # else:
             #     # if safe: #useful if the only bas active is tolerant
@@ -141,7 +142,10 @@ class MinDDPReg:
         if self.verbose:
             print('done')
         converged = dV <= conv_threshold
-        return x, u, K_u, np.resize(J,ii), converged
+        cost = np.resize(J,ii)
+        if ii==0:
+            cost = L
+        return x, u, K_u, cost, converged
 
 
     def costofTraj(self, x, u, x_desired):

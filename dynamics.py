@@ -7,7 +7,7 @@ class Quadrotor:
         self.m = 4
         self.dt = dt
         self.g = 9.81               # gravitational force (m/s^2)
-        self.mass = 2               # quad mass (kg)
+        self.mass = 1               # quad mass (kg)
         self.Ix = 1                 # quad x-axis inertia
         self.Iy = 1                 # quad y-axis inertia
         self.Iz = 1                 # quad z-axis inertia
@@ -17,13 +17,14 @@ class Quadrotor:
         self.f_wx = 0               # force due to wind on the x-axis
         self.f_wy = 0               # force due to wind on the y-axis
         self.f_wz = 0               # force due to wind on the z-axis
-        self.b = 10                  # thrust factor
-        self.l = 0.05               # distance between rotor and center of drone
-        self.d = 0.1                # drag factor
+        self.b = 10                 # thrust factor
+        self.l = 0.5               # distance between rotor and center of drone
+        self.d = 20                # drag factor
         self.x0 = np.array([[0], [0], [0], [0], [0], [0], [0], [0], [0], [5], [5], [5]])
         self.xf = np.array([[0], [0], [0], [0], [0], [0], [0], [0], [0], [-4], [-2], [1]])
 
     def system_dyn(self, state, control):
+        # print(control)
         phi, theta, psi = state.item(0), state.item(1), state.item(2)   # roll, pitch and yaw angles in earth frame
         phi_rate, theta_rate, psi_rate = state.item(3), state.item(4), state.item(5)  # roll, pitch, yaw velocities in body frame
         vx, vy, vz = state.item(6), state.item(7), state.item(8)        # x, y, and z linear velocities in body frame
@@ -56,6 +57,7 @@ class Quadrotor:
         return state_next
 
     def system_grad(self, state, control, k):
+        # print(control)
         phi, theta, psi = state.item(0), state.item(1), state.item(2)   # roll, pitch and yaw angles in earth frame
         phi_rate, theta_rate, psi_rate = state.item(3), state.item(4), state.item(5)  # roll, pitch, yaw velocities in body frame
         vx, vy, vz = state.item(6), state.item(7), state.item(8)        # x, y, and z linear velocities in body frame
