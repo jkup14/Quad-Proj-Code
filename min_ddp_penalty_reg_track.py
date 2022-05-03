@@ -125,7 +125,7 @@ class MinDDPReg:
 
                 L = L_new
             else:
-                print('Linesearch Failed')
+                # print('Linesearch Failed')
                 break
             # else:
             #     # if safe: #useful if the only bas active is tolerant
@@ -145,6 +145,7 @@ class MinDDPReg:
         cost = np.resize(J,ii)
         if ii==0:
             cost = L
+
         return x, u, K_u, cost, converged
 
 
