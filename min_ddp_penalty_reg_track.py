@@ -145,8 +145,11 @@ class MinDDPReg:
         cost = np.resize(J,ii)
         if ii==0:
             cost = L
-
-        return x, u, K_u, cost, converged
+        try:
+            return x, u, K_u, cost, converged
+        except UnboundLocalError:
+            print('hi')
+            return 0
 
 
     def costofTraj(self, x, u, x_desired):

@@ -39,7 +39,7 @@ dynamics_actual = Quadrotor(dt)                 # actual dynamics (not known), b
 
 
 """Set up learning params"""
-episodes = 50
+episodes = 20
 epochs = 15
 lr = 0.01
 bs = 32
